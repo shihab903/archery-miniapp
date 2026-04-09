@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Bow Archery</title>
   
-  <!-- Telegram Mini App -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Base Mini App -->
+  <script src="https://base.org/js/telegram-web-app.js"></script>
   
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -98,15 +98,15 @@
 
       console.log("Arrow Loose! Distance:", currentDistance.toFixed(1));
 
-      // এখানে পরে score + target hit logic যোগ করতে পারবে
-      alert("🏹 Arrow shot! Distance: " + currentDistance.toFixed(1) + " (Score system পরে add করবো)");
+      // 
+      alert("🏹 Arrow shot! Distance:20m " + currentDistance.toFixed(1) );
     }
 
-    // মাউস ডাউন দিয়ে draw শুরু
+    // Mouse draw
     const svg = document.querySelector("svg");
     svg.addEventListener("mousedown", draw);
 
-    // Mobile touch support (Telegram-এ ভালো কাজ করবে)
+    // Mobile touch support (base app)
     svg.addEventListener("touchstart", (e) => {
       e.preventDefault();
       draw(e.touches[0]);
