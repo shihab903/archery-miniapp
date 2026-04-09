@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bow Archery</title>
+  
+  <!-- Telegram Mini App -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  
+  <style>
+    body { margin:0; padding:0; background:#0a0a0a; overflow:hidden; }
+    svg { width:100vw; height:100vh; display:block; }
+    #score { position:absolute; top:20px; left:20px; color:#fff; font-size:28px; font-weight:bold; z-index:100; text-shadow:0 0 10px black; }
+  </style>
+</head>
+<body>
+
+  <div id="score">Score: 0</div>
+
+  <svg id="game-svg" width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+    <!-- Bow Group -->
+    <g class="arrow-angle" style="transform-origin: 100px 250px;">
+      <!-- Bow body -->
+      <path d="M100 150 Q50 250 100 350" fill="none" stroke="#8B4513" stroke-width="30" stroke-linejoin="round"/>
+      <!-- String -->
+      <line id="string" x1="100" y1="150" x2="100" y2="350" stroke="#ddd" stroke-width="4"/>
+      <!-- Arrow (will be pulled back) -->
+      <g id="arrow-group">
+        <line x1="100" y1="250" x2="30" y2="250" stroke="#ddd" stroke-width="8" stroke-linecap="round"/>
+        <polygon points="30,250 5,235 5,265" fill="#ddd"/>
+      </g>
+    </g>
+  </svg>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    tg.setHeaderColor('#0a0a0a');
+
+    var pivot = { x: 100, y: 250 };
+    var randomAngle = 0;
+    var isDrawing = false;
+    var currentDistance = 0;
+
+    function getMouseSVG(e) {
+      const svg = document.querySelector("svg");
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const cursorPoint = pt.matrixTransform(svg.getScreenCTM().inverse());
+      return { x: cursorPoint.x, y: cursorPoint.y };
+    }
+
+    function aim(e) {
+      if (!isDrawing) return;
+      let point = getMouseSVG(e);
+      point.x = Math.min(point.x, pivot.x - 5);
+
+      const dx = point.x - pivot.x;
+      const dy = point.y - pivot.y;
+
+      const angle = Math.atan2(dy, dx) + randomAngle;
+      const bowAngle = angle - Math.PI;
+      currentDistance = Math.min(Math.hypot(dx, dy), 55);
+
+      gsap.to(".arrow-angle", {
+        rotation: bowAngle + "rad",
+        duration: 0.025,
+        overwrite: "auto"
+      });
+
+      gsap.to("#arrow-group", {
+        x: -currentDistance,
+        duration: 0.025,
+        overwrite: "auto"
+      });
+    }
+
+    function draw(e) {
+      isDrawing = true;
+      randomAngle = (Math.random() * Math.PI * 0.03) - 0.015;
+      gsap.to("#arrow-group", { opacity: 1, duration: 0.2 });
+      aim(e);
+      window.addEventListener("mousemove", aim);
+      window.addEventListener("mouseup", loose);
+    }
+
+    function loose(e) {
+      if (!isDrawing) return;
+      isDrawing = false;
+      window.removeEventListener("mousemove", aim);
+      window.removeEventListener("mouseup", loose);
+
+      console.log("Arrow Loose! Distance:", currentDistance.toFixed(1));
+
+      // এখানে পরে score + target hit logic যোগ করতে পারবে
+      alert("🏹 Arrow shot! Distance: " + currentDistance.toFixed(1) + " (Score system পরে add করবো)");
+    }
+
+    // মাউস ডাউন দিয়ে draw শুরু
+    const svg = document.querySelector("svg");
+    svg.addEventListener("mousedown", draw);
+
+    // Mobile touch support (Telegram-এ ভালো কাজ করবে)
+    svg.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      draw(e.touches[0]);
+    });
+  </script>
+</body>
+</html>
